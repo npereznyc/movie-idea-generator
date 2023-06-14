@@ -29,7 +29,7 @@ const setupTextarea = document.getElementById('setup-textarea')
 async function fetchBotReply(outline){
   const response = await openai.createCompletion({
     model: 'text-davinci-003',
-    prompt: `Generate a short message to enthusiastically say an outline sounds interesting and that you need some minutes to think about it.
+    prompt: `Generate a short message to enthusiastically say an outline sounds interesting and that you need some minutes to think about it. Include a reference to the idea.
     ###
     outline: Two dogs fall in love and move to Hawaii to learn to surf.
     message: I'll need to think about that. But your idea is amazing! I love the bit about Hawaii!
@@ -52,11 +52,11 @@ async function fetchBotReply(outline){
 async function fetchSynopsis(outline){
   const response = await openai.createCompletion({
     model: 'text-davinci-003',
-    prompt: `Use an outline to generate exciting and marketable movie synopsis. Don't give too much of the movie away and create anticipation.
+    prompt: `Use an outline to generate exciting and marketable movie synopsis. Come up with actors that would suit the roles and include their names in parenthesis after the character names. Don't give too much of the movie away and create anticipation.
     ###
     outline: A farm boy discovers he has magical powers and is the only who who can save the world from the dark one. 
     movie synopsis:
-    Young farm boy Eli (Mike Wheeler) unearths an ancient artifact, unlocking dormant magical powers. He's the prophesied "Chosen Seeder," destined to battle the returning Dark One (Benedict Cumberbatch), a corrupted hero threatening global darkness. Straddling adolescent life and elemental magic, Eli must save the world in this epic tale of discovery and sacrifice. "Seed of Destiny," where the ordinary meets the extraordinary. 
+    Young farm boy Eli (Mike Wheeler) unearths an ancient artifact, unlocking dormant magical powers. He's the prophesied "Chosen Seeder," destined to battle the returning Dark One (Benedict Cumberbatch), a corrupted hero threatening global darkness. Straddling adolescent life and elemental magic, Eli must save the world in this epic tale of discovery and sacrifice.
     ###
     outline: ${outline}
     movie synopsis: 
@@ -67,20 +67,31 @@ async function fetchSynopsis(outline){
   document.getElementById('output-text').innerText = synopsis
   console.log(response)
   fetchTitle(synopsis)
+  fetchStars(synopsis)
 }
 
 async function fetchTitle(synopsis){
   const response = await openai.createCompletion({
     model: 'text-davinci-003',
-    prompt: `Use a movie synopsis to generate an intriguing and descriptive movie title.
-    ###
-    movie synopsis: Young farm boy Eli (Mike Wheeler) unearths an ancient artifact, unlocking dormant magical powers. He's the prophesied "Chosen Seeder," destined to battle the returning Dark One (Benedict Cumberbatch), a corrupted hero threatening global darkness. Straddling adolescent life and elemental magic, Eli must save the world in this epic tale of discovery and sacrifice. "Seed of Destiny," where the ordinary meets the extraordinary. 
-    movie title: Seed of Destiny
-    ###
-    movie synopsis: ${synopsis}
-    movie title: 
-    `,
-    max_tokens: 15
+    prompt: `Generate a catchy movie title for this synopsis: ${synopsis}`,
+    max_tokens: 25,
+    temperature: 0.7
   })
   document.getElementById('output-title').innerText = response.data.choices[0].text.trim()
+}
+
+async function fetchStars(synopsis){
+  const response = await openai.createCompletion({
+    model: 'text-davinci-003',
+    prompt: `Extract the names in parenthesis from the synopsis.
+    ###
+    synopsis: Young farm boy Eli (Mike Wheeler) unearths an ancient artifact, unlocking dormant magical powers. He's the prophesied "Chosen Seeder," destined to battle the returning Dark One (Benedict Cumberbatch), a corrupted hero threatening global darkness. Straddling adolescent life and elemental magic, Eli must save the world in this epic tale of discovery and sacrifice. "Seed of Destiny," where the ordinary meets the extraordinary. 
+    names: Mike Wheeler, Benedict Cumberbatch)
+    ###
+    synopsis: ${synopsis}
+    names: 
+    `,
+    max_tokens: 30
+  })
+  document.getElementById('output-stars').innerText = response.data.choices[0].text.trim()
 }
