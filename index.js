@@ -63,6 +63,24 @@ async function fetchSynopsis(outline){
     `,
     max_tokens: 700
   })
-  document.getElementById('output-text').innerText = response.data.choices[0].text.trim()
+  const synopsis = response.data.choices[0].text.trim()
+  document.getElementById('output-text').innerText = synopsis
   console.log(response)
+  fetchTitle(synopsis)
+}
+
+async function fetchTitle(synopsis){
+  const response = await openai.createCompletion({
+    model: 'text-davinci-003',
+    prompt: `Use a movie synopsis to generate an intriguing and descriptive movie title.
+    ###
+    movie synopsis: Young farm boy Eli (Mike Wheeler) unearths an ancient artifact, unlocking dormant magical powers. He's the prophesied "Chosen Seeder," destined to battle the returning Dark One (Benedict Cumberbatch), a corrupted hero threatening global darkness. Straddling adolescent life and elemental magic, Eli must save the world in this epic tale of discovery and sacrifice. "Seed of Destiny," where the ordinary meets the extraordinary. 
+    movie title: Seed of Destiny
+    ###
+    movie synopsis: ${synopsis}
+    movie title: 
+    `,
+    max_tokens: 15
+  })
+  document.getElementById('output-title').innerText = response.data.choices[0].text.trim()
 }
