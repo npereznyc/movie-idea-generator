@@ -26,10 +26,17 @@ const setupTextarea = document.getElementById('setup-textarea')
   }
 })
 
-async function fetchBotReply(outline){
+async function callOpenAI(prompt, max_tokens){
   const response = await openai.createCompletion({
+    prompt,
     model: 'text-davinci-003',
-    prompt: `Generate a short message to enthusiastically say an outline sounds interesting and that you need some minutes to think about it. Include a reference to the idea.
+    max_tokens
+  })
+  return response.data.choices[0].text.trim()
+}
+
+async function fetchBotReply(outline){
+  const prompt = `Generate a short message to enthusiastically say an outline sounds interesting and that you need some minutes to think about it. Include a reference to the idea.
     ###
     outline: Two dogs fall in love and move to Hawaii to learn to surf.
     message: I'll need to think about that. But your idea is amazing! I love the bit about Hawaii!
@@ -42,17 +49,13 @@ async function fetchBotReply(outline){
     ###
     outline: ${outline}
     message: 
-    `,
-    max_tokens: 60 //max_tokens will default to 16. finish_reason: "length" is a bad sign, we want to see finish_reason: "stop". This will appear i console if we console.log. Limiting number of tokens will keep costs down and performance faster.
-  })
-    movieBossText.innerText = response.data.choices[0].text.trim()
-    // console.log(response)
+    `;
+    const reply = await callOpenAI(prompt, 60)
+    movieBossText.innerText = reply;
 }
 
 async function fetchSynopsis(outline){
-  const response = await openai.createCompletion({
-    model: 'text-davinci-003',
-    prompt: `Use an outline to generate exciting and marketable movie synopsis. Come up with actors that would suit the roles and include their names in parenthesis after the character names. Don't give too much of the movie away and create anticipation.
+  const prompt = `Use an outline to generate exciting and marketable movie synopsis. Come up with actors that would suit the roles and include their names in parenthesis after the character names. Don't give too much of the movie away and create anticipation.
     ###
     outline: A farm boy discovers he has magical powers and is the only who who can save the world from the dark one. 
     movie synopsis:
@@ -60,10 +63,8 @@ async function fetchSynopsis(outline){
     ###
     outline: ${outline}
     movie synopsis: 
-    `,
-    max_tokens: 700
-  })
-  const synopsis = response.data.choices[0].text.trim()
+    `;
+  const synopsis = await callOpenAI(prompt, 700)
   document.getElementById('output-text').innerText = synopsis
   // console.log(response)
   fetchTitle(synopsis)
