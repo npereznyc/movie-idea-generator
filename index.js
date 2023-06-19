@@ -26,11 +26,12 @@ const setupTextarea = document.getElementById('setup-textarea')
   }
 })
 
-async function callOpenAI(prompt, max_tokens){
+async function callOpenAI(prompt, max_tokens, temperature){
   const response = await openai.createCompletion({
     prompt,
     model: 'text-davinci-003',
-    max_tokens
+    max_tokens,
+    temperature
   })
   return response.data.choices[0].text.trim()
 }
@@ -63,40 +64,31 @@ async function fetchSynopsis(outline){
     ###
     outline: ${outline}
     movie synopsis: 
-    `;
+    `
   const synopsis = await callOpenAI(prompt, 700)
   document.getElementById('output-text').innerText = synopsis
-  // console.log(response)
   fetchTitle(synopsis)
   fetchStars(synopsis)
 }
 
 async function fetchTitle(synopsis){
-  const response = await openai.createCompletion({
-    model: 'text-davinci-003',
-    prompt: `Generate a catchy movie title for this synopsis: ${synopsis}`,
-    max_tokens: 25,
-    temperature: 0.7
-  })
-  const title = response.data.choices[0].text.trim()
+  const prompt = `Generate a catchy movie title for this synopsis: ${synopsis}`;
+  const title = await callOpenAI(prompt,25,0.7)
   document.getElementById('output-title').innerText = title
   fetchImagePrompt(title, synopsis)
 }
 
 async function fetchStars(synopsis){
-  const response = await openai.createCompletion({
-    model: 'text-davinci-003',
-    prompt: `Extract the names in parenthesis from the synopsis.
+  const prompt = `Extract the names in parenthesis from the synopsis.
     ###
     synopsis: Young farm boy Eli (Mike Wheeler) unearths an ancient artifact, unlocking dormant magical powers. He's the prophesied "Chosen Seeder," destined to battle the returning Dark One (Benedict Cumberbatch), a corrupted hero threatening global darkness. Straddling adolescent life and elemental magic, Eli must save the world in this epic tale of discovery and sacrifice. "Seed of Destiny," where the ordinary meets the extraordinary. 
     names: Mike Wheeler, Benedict Cumberbatch)
     ###
     synopsis: ${synopsis}
     names: 
-    `,
-    max_tokens: 30
-  })
-  document.getElementById('output-stars').innerText = response.data.choices[0].text.trim()
+    `;
+  const stars = await callOpenAI(prompt, 30)
+  document.getElementById('output-stars').innerText = stars
 }
 
 async function fetchImagePrompt(title,synopsis){
