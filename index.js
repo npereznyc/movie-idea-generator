@@ -92,9 +92,7 @@ async function fetchStars(synopsis){
 }
 
 async function fetchImagePrompt(title,synopsis){
-  const response = await openai.createCompletion({
-    model: 'text-davinci-003',
-    prompt: `Give a short description of an image which could be used to advertise a movie based on a title and synopsis. The description should be rich in visual detail but contain no names.
+  const prompt = `Give a short description of an image which could be used to advertise a movie based on a title and synopsis. The description should be rich in visual detail but contain no names.
     ###
     title: Love's Time Warp
     synopsis: When scientist and time traveller Wendy (Emma Watson) is sent back to the 1920s to assassinate a future dictator, she never expected to fall in love with them. As Wendy infiltrates the dictator's inner circle, she soon finds herself torn between her mission and her growing feelings for the leader (Brie Larson). With the help of a mysterious stranger from the future (Josh Brolin), Wendy must decide whether to carry out her mission or follow her heart. But the choices she makes in the 1920s will have far-reaching consequences that reverberate through the ages.
@@ -107,11 +105,9 @@ async function fetchImagePrompt(title,synopsis){
     title: ${title}
     synopsis: ${synopsis}
     image description:
-    `,
-    max_tokens: 100,
-    temperature: 0.8
-  })
-  fetchImageUrl(response.data.choices[0].text.trim())
+    `;
+  const imagePrompt = await callOpenAI(prompt,)
+  fetchImageUrl(imagePrompt, 100, 0.8)
 }
 
 async function fetchImageUrl(imagePrompt){
@@ -129,10 +125,3 @@ async function fetchImageUrl(imagePrompt){
     movieBossText.innerText = `This idea is so good, I'm jealous! I'm gonona' make you rich for sure! Remember, I want 10% 💰`
   })
 }
-
-
-// prompt: //max 1000 characters.
-// n:1,
-// size: '256x256',//larger sizes will cost more 
-// response_format: 'url' //or b64_json. will default to url. OpenAI image urls only last one hour; if it's needed for longer, b64_json is best.
-// outputImg.innerHTML = `<img src='${response.data.data[0].url}'`
